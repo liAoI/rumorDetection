@@ -2,6 +2,7 @@ from Config import opt
 from utils import ShipDataset
 import models
 from utils import Visualizer
+from tqdm import tqdm,trange
 #需要导入以下包
 
 import torch
@@ -24,34 +25,46 @@ logger = logging.getLogger(__name__)
 def my_collate(batch):
     '''
         batch里面长度补齐实现策略
+        按句子长度排序 从大到小
         按照句子的平均值来补齐，其中平均值超过2000的，按照2000来截断
+        利用torch.gather
     '''
+    batch.sort(key=lambda data: data[0].shape[0], reverse=True)
     data_x = [item[0].numpy() for item in batch]
     X = []
+    len_x = []
     data_y = [item[1].numpy() for item in batch]
     data_len = [x.shape[0] for x in data_x ]
 
     aver = np.mean(data_len)
     aver = int(aver)  #这里采用强制转换，将平均值转为int型
-    pad_col = [aver - x for x in data_len]
+
     if aver < 2000:
-        for cols , data in zip(pad_col,data_x) :
+        pad_col = [aver - x for x in data_len]
+        for cols , data ,l_x in zip(pad_col,data_x,data_len) :
             if cols>0 or cols==0:
                 data = np.pad(data,((0,cols),(0,0)),'constant')
                 X.append(data)
+                len_x.append(l_x)
             else:
                 X.append(data[0:aver,:])
+                len_x.append(aver)
+
     else:
-        for len, data in zip(data_len, data_x):
-            if len<2000:
-                data = np.pad(data, ((0, 2000-len),(0,0)), 'constant')
+        pad_col = [2000 - x for x in data_len]
+        for cols, data ,l_x in zip(pad_col,data_x,data_len):
+            if cols > 0 or cols == 0:
+                data = np.pad(data, ((0, cols), (0, 0)), 'constant')
                 X.append(data)
+                len_x.append(l_x)
             else:
                 X.append(data[0:2000, :])
-    # logger.info('---结束打包了，宝贝！---')
+                len_x.append(2000)
+
+    
     X= torch.tensor(X)
     Y = torch.tensor(data_y)
-    return X,Y
+    return X,Y,len_x
     # return batch
 #测试集上得出精度和损失值
 def Test_on_data(valid_loader,model,criterion):
@@ -100,13 +113,13 @@ criterion = torch.nn.BCELoss().cuda(device=0)
 scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.8, patience=3, verbose=True,
                                                threshold=0.0001, threshold_mode='rel', cooldown=0, min_lr=0, eps=1e-08)
 
-for epoch in range(opt.rnn_epochs):
+for epoch in trange(opt.rnn_epochs):
     for i, trainset in enumerate(train_loader):
-        X, Y = trainset
+        X, Y ,len_x= trainset
 
         X = X.cuda(device=0)
         Y = Y.cuda(device=0)
-        out_y,_ = model(X)
+        out_y,_ = model(X,len_x)
 
         #计算loss值
         loss = criterion(out_y, Y)
