@@ -26,8 +26,9 @@ class rnn(BasicModule):
                                        nn.Linear(15, 2), nn.BatchNorm1d(2), nn.Sigmoid()
                                        )
 
-    def forward(self,input,state=None):
+    def forward(self,input,len_x,state=None):
         batch, _, _ = input.size()
+        input = torch.nn.utils.rnn.pack_padded_sequence(input, len_x, batch_first=True)
         if self.gpu == True:
             if self.lstm == True:
                 if state is None:
@@ -57,5 +58,12 @@ class rnn(BasicModule):
                     state = torch.randn(self.n_layers, batch, self.hidden_size).float()
                 output, state = self.gru(input, state)
         #最后输出结果
+        output, _ = torch.nn.utils.rnn.pad_packed_sequence(output, batch_first=True)
+        #构造torch.gather 的 index
+        index = torch.ones((batch,1,self.hidden_size),dtype=torch.long,requires_grad=False)
+        for i in range(len(len_x)):
+            index[i,0,:] = len_x[i]-1
+
+        output = torch.gather(output,1,index.cuda(device=0))
         output = self.layer(output[:, -1, :])
         return output,state
