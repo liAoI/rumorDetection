@@ -1,2 +1,2 @@
-from .LoadData import ShipDataset
+from .LoadData import ShipDataset,IndexOfData
 from .visualize import Visualizer

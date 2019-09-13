@@ -61,7 +61,7 @@ def my_collate(batch):
                 X.append(data[0:2000, :])
                 len_x.append(2000)
 
-    
+    # logger.info('---结束打包了，宝贝！---')
     X= torch.tensor(X)
     Y = torch.tensor(data_y)
     return X,Y,len_x
