@@ -243,12 +243,15 @@ class GAN_train_weibo:
                         self.G_rn_optimizer.step()
                 if i % 6 == 0 :
                     tqdm.tqdm.write('epoch : {} loss_grn:{} loss_gnr:{} loss_d:{}'.format(epoch,self.loss_grn,self.loss_gnr,self.loss_d))
+                vis.plot('D_loss---globalStep',self.loss_d)
+                vis.plot('loss_grn---globalStep',self.loss_grn)
+                vis.plot('loss_gnr---globalStep',self.loss_gnr)
             loss_test,acc = self.Testdata(test_loader_n,test_loader_r)
             vis.plot('loss_test',loss_test)
-            vis.plot('acc',acc)
-            vis.plot('D_loss',self.loss_d)
-            vis.plot('loss_grn',self.loss_grn)
-            vis.plot('loss_gnr',self.loss_gnr)
+            vis.plot('acc---epoch',acc)
+            vis.plot('D_loss---epoch',self.loss_d)
+            vis.plot('loss_grn---epoch',self.loss_grn)
+            vis.plot('loss_gnr---epoch',self.loss_gnr)
 
 
 
@@ -259,13 +262,15 @@ class GAN_train_weibo:
             label = torch.tensor([[0.0, 0.0]])
             for valiset in test_loader_n:
                 X, y, len_x, n_words = valiset
-                out_y, _ = self.D(X, len_x)
+                input = self.embeding(X)
+                out_y, _ = self.D(input, len_x)
 
                 out = torch.cat((out, out_y), 0)
                 label = torch.cat((label, y), 0)
             for valiset in test_loader_r:
                 X, y, len_x, n_words = valiset
-                out_y, _ = self.D(X, len_x)
+                input = self.embeding(X)
+                out_y, _ = self.D(input, len_x)
 
                 out = torch.cat((out, out_y), 0)
                 label = torch.cat((label, y), 0)
