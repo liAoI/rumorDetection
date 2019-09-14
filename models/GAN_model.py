@@ -243,15 +243,15 @@ class GAN_train_weibo:
                         self.G_rn_optimizer.step()
                 if i % 6 == 0 :
                     tqdm.tqdm.write('epoch : {} loss_grn:{} loss_gnr:{} loss_d:{}'.format(epoch,self.loss_grn,self.loss_gnr,self.loss_d))
-                vis.plot('D_loss---globalStep',self.loss_d)
-                vis.plot('loss_grn---globalStep',self.loss_grn)
-                vis.plot('loss_gnr---globalStep',self.loss_gnr)
+                vis.plot('D_loss---globalStep',torch.tensor(self.loss_d))
+                vis.plot('loss_grn---globalStep',torch.tensor(self.loss_grn))
+                vis.plot('loss_gnr---globalStep',torch.tensor(self.loss_gnr))
             loss_test,acc = self.Testdata(test_loader_n,test_loader_r)
-            vis.plot('loss_test',loss_test)
-            vis.plot('acc---epoch',acc)
-            vis.plot('D_loss---epoch',self.loss_d)
-            vis.plot('loss_grn---epoch',self.loss_grn)
-            vis.plot('loss_gnr---epoch',self.loss_gnr)
+            vis.plot('loss_test',torch.tensor(loss_test))
+            vis.plot('acc---epoch',torch.tensor(acc))
+            vis.plot('D_loss---epoch',torch.tensor(self.loss_d))
+            vis.plot('loss_grn---epoch',torch.tensor(self.loss_grn))
+            vis.plot('loss_gnr---epoch',torch.tensor(self.loss_gnr))
 
 
 
