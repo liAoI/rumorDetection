@@ -5,3 +5,5 @@
 20190828 --更新-- 通过torch.gather，torch.nn.utils.rnn.pad_packed_sequence，torch.nn.utils.rnn.pack_padded_sequence实现数据批次补齐后出现的一些导致结果偏差的问题。
 
 20190913 --更新-- 添加GAN模型
+
+202005127 --更新-- 完善GAN模型中的seq2seq
